@@ -80,7 +80,7 @@ def init_db(app):
         
         # Seed a default user for login functionality
         if User.query.count() == 0:
-            admin = User(username='admin')
-            admin.set_password('password') # Use a secure password in production
+            admin = User(username='rezuanrokib')
+            admin.set_password('1234') # Use a secure password in production
             db.session.add(admin)
             db.session.commit()
