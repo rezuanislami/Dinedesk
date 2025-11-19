@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6e0d8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            width: 700px;
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .left {
+            flex: 1;
+            min-width: 300px;
+            background-color: #8b6f5e; /* Solid color matching the image's dominant color */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d1/Taj_Mahal_in_March_2004.jpg'); /* Keep image for effect */
+            background-blend-mode: multiply; /* Blend the background image with the solid color */
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 40px;
+            border-radius: 15px 0 0 15px; /* Match container radius */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-right: -15px; /* Create the offset effect */
+            z-index: 1;
+
+        }
+        .left h2 {
+            margin-top: 0;
+            font-size: 36px;
+            font-weight: 900;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+        .left p {
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+        .right {
+            flex: 1;
+            padding: 40px;
+            background-color: #fff;
+            border-radius: 0 15px 15px 0;
+            z-index: 0;
+        }
+        .right label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .right input, .right select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .right button {
+            margin-top: 25px;
+            width: 100%;
+            padding: 12px;
+            background-color: #8b6f5e;
+            color: white;
+            border: none;
+            border-radius: 25px; /* More rounded button */
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .right button:hover {
+            background-color: #7a5e4f;
+        }
+        .reservation-output {
+            display: none; /* Hidden by default */
+            padding: 20px;
+            background-color: #f0f0f0; /* Different color */
+            border-radius: 10px;
+            border: 2px solid #8b6f5e;
+            color: #333;
+        }
+        .reservation-output h3 {
+            color: #8b6f5e;
+            margin-top: 0;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .reservation-output table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .reservation-output table td {
+            padding: 5px 0;
+        }
+        .reservation-output table strong {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <h2>Make Your<br>Reservation</h2>
+            <p>Enjoy Your Time.</p>
+        </div>
+        <div class="right">
+            <form id="reservationForm">
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" required>
+
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" required>
+
+            <label for="checkin">Reserve Date</label>
+            <input type="date" id="checkin">
+
+            <label for="time">Reserve Time</label>
+            <input type="time" id="time">
+
+           
+
+            <label for="adults">Adults</label>
+            <input type="number" id="adults" required min="1" value="1">
+
+            <label for="children">Children</label>
+            <select id="children">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+
+              <label for="room">Party Type</label>
+            <select id="room">
+                <option value="">Select party type</option>
+                <option value="BIRTHDAY">BIRTHDAY</option>
+                <option value="ANNIVERSARY">ANNIVERSARY</option>
+                <option value="FAMILY">FAMILY G.T</option>
+<option value="CONGRATULATIONS">CONGRATULATIONS</option>
+<option value="OTHERS">OTHERS</option>
+            </select>
+
+            <button type="submit">Check Availability</button>
+        </form>
+            <div id="reservationOutput" class="reservation-output"></div>
+        </div>
+    </div>
+</body>
+</html>
+
+    <script>
+        document.getElementById('reservationForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Stop the form from submitting normally
+
+            const form = event.target;
+            const outputDiv = document.getElementById('reservationOutput');
+
+            // Collect data
+            const data = {
+                'Surname': form.surname.value,
+                'Phone Number': form.phone.value,
+                'Reserve Date': form.checkin.value,
+                'Reserve Time': form.time.value,
+                // 'Check Out Date': form.checkout.value, // Field removed by user
+                'Adults': form.adults.value,
+                'Children': form.children.value,
+                'Party Type': form.room.options[form.room.selectedIndex].text
+            };
+
+            // Format data for display
+            let html = '<h3>Reservation Details Confirmed!</h3>';
+            html += '<table>';
+            for (const [key, value] of Object.entries(data)) {
+                html += `<tr><td><strong>${key}:</strong></td><td>${value}</td></tr>`;
+            }
+            html += '</table>';
+
+            // Display data
+            outputDiv.innerHTML = html + '<button type="button" id="backButton" class="right button">Back to Dashboard</button>';
+            outputDiv.style.display = 'block'; // Make sure it's visible
+            form.style.display = 'none'; // Hide the form after submission
+
+            // Add event listener for the new button
+            document.getElementById('backButton').addEventListener('click', function() {
+                outputDiv.style.display = 'none'; // Hide the output
+                form.style.display = 'block'; // Show the form
+            });
+        });
+    </script>

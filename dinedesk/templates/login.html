@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Recipe Website</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            background: #fff;
+            width: 400px;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        .login-container img.logo {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+
+        .login-container h2 {
+            margin-bottom: 10px;
+            font-weight: normal;
+            color: #333;
+        }
+
+        .login-container p {
+            margin-bottom: 30px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .login-container input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        .login-container .forgot {
+            display: block;
+            text-align: right;
+            font-size: 12px;
+            color: #007BFF;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .login-container .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #ff0066;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .social-login {
+            margin-top: 20px;
+        }
+
+        .social-login button {
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .social-login .facebook { background: #3b5998; }
+        .social-login .google { background: #db4437; }
+        .social-login .twitter { background: #1da1f2; }
+
+        /* Optional background images for decoration */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 150px;
+            height: 150px;
+            background: url('left-bowl.png') no-repeat center/cover;
+            opacity: 0.3;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            width: 150px;
+            height: 150px;
+            background: url('right-bowl.png') no-repeat center/cover;
+            opacity: 0.3;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        footer a {
+            color: #007BFF;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        
+        <h2>Login</h2>
+        <p>More than 25,000 recipes from around the world</p>
+        <form>
+            <input type="text" placeholder="Email or Username" required>
+            <input type="password" placeholder="Password" required>
+            <div>
+                <input type="checkbox" id="remember">
+                <label for="remember">Remember me</label>
+            </div>
+            <a href="#" class="forgot">Forgot Password?</a>
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+        <div class="social-login">
+            <button class="facebook">Facebook</button>
+            <button class="google">Google</button>
+            <button class="twitter">Twitter</button>
+        </div>
+    </div>
+
+    <footer>
+        <a href="#">Explore</a> | <a href="#">Help & Feedback</a> | <a href="#">Contact</a>
+    </footer>
+
+</body>
+</html>
+
+

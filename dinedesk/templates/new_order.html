@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Order</title>
+</head>
+<body>
+    <h1>New Order</h1>
+
+    <form method="POST">
+        <label>Table Number:</label>
+        <input type="text" name="table_number" required><br><br>
+
+        <h3>Menu</h3>
+        {% for item in menu %}
+            <div>
+                {{ item.name }} - ${{ item.price }}
+                <input type="number" name="qty_{{ item.id }}" min="0" value="0">
+            </div>
+        {% endfor %}
+
+        <br>
+        <button type="submit">Send to Kitchen</button>
+    </form>
+</body>
+</html>
+
+

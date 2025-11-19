@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kitchen Orders</title>
+</head>
+<body>
+    <h1>Kitchen Tickets</h1>
+
+    {% for t in tickets %}
+        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+            <strong>Order #{{ t.order_id }}</strong><br>
+            Item: {{ t.menu_item.name }}<br>
+            Quantity: {{ t.quantity }}<br>
+            Status: {{ t.status }}<br><br>
+
+            <form method="POST" action="{{ url_for('update_status', item_id=t.id, status='preparing') }}">
+                <button type="submit">Mark Preparing</button>
+            </form>
+            <form method="POST" action="{{ url_for('update_status', item_id=t.id, status='ready') }}">
+                <button type="submit">Mark Ready</button>
+            </form>
+            <form method="POST" action="{{ url_for('update_status', item_id=t.id, status='served') }}">
+                <button type="submit">Mark Served</button>
+            </form>
+        </div>
+    {% else %}
+        <p>No active tickets.</p>
+    {% endfor %}
+</body>
+</html>
+

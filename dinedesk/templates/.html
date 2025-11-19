@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Reservation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>New Reservation</h1>
+
+    <form method="POST" action="{{ url_for('new_reservation') }}">
+        <label for="name">Customer Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="reserved_for">Reservation Date & Time:</label><br>
+        <input type="datetime-local" id="reserved_for" name="reserved_for" required><br><br>
+
+        <label for="party_size">Party Size:</label><br>
+        <input type="number" id="party_size" name="party_size" min="1" required><br><br>
+
+        <button type="submit">Submit Reservation</button>
+    </form>
+
+    <p><a href="{{ url_for('reservations') }}">Back to Reservations</a></p>
+</body>
+</html>
+
