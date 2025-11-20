@@ -28,6 +28,17 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(80))
 
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_name = db.Column(db.String(120))
+    phone = db.Column(db.String(50))
+    email = db.Column(db.String(120))
+    total = db.Column(db.Float)
+    items = db.Column(db.Text)  # JSON string of items
+    notes = db.Column(db.Text)
+    payment_method = db.Column(db.String(50))
+    order_type = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=db.func.now())
 
 # Create tables + Seed default admin user
 with app.app_context():
@@ -154,6 +165,20 @@ def menu():
     ]
     return render_template("menu.html", menu_items=menu_items)
 
+@app.route("/new_order")
+@login_required
+def new_order():
+    menu_data = {
+        "appetizer": [
+            {"id": 1, "name": "Bruschetta", "price": 8.99, "emoji": "🍞"},
+            {"id": 2, "name": "Garlic Bread", "price": 6.99, "emoji": "🧄"},
+        ],
+        "main": [
+            {"id": 11, "name": "Grilled Salmon", "price": 24.99, "emoji": "🐟"},
+        ],
+        # Add more categories...
+    }
+    return render_template("new_order.html", menu_data=menu_data)
 
 
 # ---------- RUN SERVER ----------
