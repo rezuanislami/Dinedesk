@@ -1,181 +1,161 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from models import db, init_db, User, MenuItem, Order, OrderItem, Reservation
-from forms import LoginForm, ReservationForm
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_sqlalchemy import SQLAlchemy
+from functools import wraps
 
-# Initialize Flask app
 app = Flask(__name__)
+app.secret_key = "your_secret_key"
 
-# Configuration
-app.config['SECRET_KEY'] = 'a-very-secret-key-that-should-be-changed'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dinedesk.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# ---------- DATABASE CONFIG ----------
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///dinedesk.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Initialize Database and Login Manager
-db.init_app(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+db = SQLAlchemy(app)
 
-# Initialize Database on first request
+
+# ---------- MODELS ----------
+class Reservation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120))
+    email = db.Column(db.String(120))
+    date = db.Column(db.String(50))
+    time = db.Column(db.String(50))
+    guests = db.Column(db.Integer)
+    notes = db.Column(db.Text)
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True)
+    password = db.Column(db.String(80))
+
+
+# Create tables + Seed default admin user
 with app.app_context():
-    init_db(app)
+    db.create_all()
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+    if not User.query.filter_by(username='admin').first():
+        user = User(username='admin', password='1234')
+        db.session.add(user)
+        db.session.commit()
 
-# --- Authentication Routes ---
 
-@app.route('/')
-def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+# ---------- LOGIN REQUIRED DECORATOR ----------
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            flash("Please log in first.")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
 
-@app.route('/login', methods=['GET','POST'])
+
+# ---------- ROUTES ----------
+@app.route("/")
+def home():
+    return render_template("base.html")
+
+
+# ---------- LOGIN ----------
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        flash('Invalid credentials')
-    return render_template('login.html', form=form)
+    error = None
 
-@app.route('/logout')
-@login_required
+    if request.method == "POST":
+        username = request.form["username"].strip()
+        password = request.form["password"].strip()
+
+        user = User.query.filter_by(username=username, password=password).first()
+
+        if user:
+            session["user_id"] = user.id
+            flash("Login successful!")
+            return redirect(url_for("dashboard"))
+        else:
+            error = "Invalid username or password."
+
+    return render_template("login.html", error=error)
+
+
+# ---------- LOGOUT ----------
+@app.route("/logout")
 def logout():
-    logout_user()
-    return redirect(url_for('login'))
+    session.pop("user_id", None)
+    flash("Logged out successfully!")
+    return redirect(url_for("login"))
 
-# --- Main Application Routes ---
 
-@app.route('/dashboard')
+# ---------- DASHBOARD ----------
+@app.route("/dashboard")
 @login_required
 def dashboard():
-    # Simple dashboard data
-    total_orders = Order.query.count()
-    pending_items = OrderItem.query.filter_by(status='pending').count()
-    return render_template('dashboard.html', total_orders=total_orders, pending_items=pending_items)
+    reservations = Reservation.query.order_by(Reservation.id.desc()).all()
+    return render_template("dashboard.html", reservations=reservations)
 
-@app.route('/clock')
+
+# ---------- CREATE RESERVATION ----------
+@app.route("/reservation", methods=["GET", "POST"])
 @login_required
-def clock():
-    return render_template('clock.html')
+def reservation_form():
+    if request.method == "POST":
+        new_res = Reservation(
+            name=request.form["name"],
+            email=request.form["email"],
+            date=request.form["date"],
+            time=request.form["time"],
+            guests=request.form["guests"],
+            notes=request.form.get("notes", "")
+        )
+        db.session.add(new_res)
+        db.session.commit()
+        flash("Reservation added successfully!")
+        return redirect(url_for("dashboard"))
 
-# --- Waiter: Make a new order ---
-@app.route('/orders/new', methods=['GET', 'POST'])
+    return render_template("reservation_form.html")
+
+
+# ---------- EDIT RESERVATION ----------
+@app.route("/reservation/edit/<int:id>", methods=["GET", "POST"])
 @login_required
-def new_order():
-    menu = MenuItem.query.all()  # Get all dishes from menu
-    if request.method == 'POST':
-        table_number = request.form.get('table_number')
-        if not table_number:
-            flash("Error: Table number is required", 'error')
-            return redirect(url_for('new_order'))
+def edit_reservation(id):
+    res = Reservation.query.get_or_404(id)
 
-        order = Order(table_number=table_number)
-        db.session.add(order)
-        db.session.flush() # Get the order ID before commit
+    if request.method == "POST":
+        res.name = request.form["name"]
+        res.email = request.form["email"]
+        res.date = request.form["date"]
+        res.time = request.form["time"]
+        res.guests = request.form["guests"]
+        res.notes = request.form.get("notes", "")
 
-        has_items = False
-        for item in menu:
-            qty = request.form.get(f'qty_{item.id}')
-            if qty and int(qty) > 0:
-                order_item = OrderItem(order_id=order.id, menu_item_id=item.id, quantity=int(qty))
-                db.session.add(order_item)
-                has_items = True
-        
-        if has_items:
-            db.session.commit()
-            flash(f"Order for Table {table_number} placed successfully!", 'success')
-            return redirect(url_for('kitchen'))
-        else:
-            db.session.rollback()
-            flash("Error: Order must contain at least one item", 'error')
-            return redirect(url_for('new_order'))
+        db.session.commit()
+        flash("Reservation updated!")
+        return redirect(url_for("dashboard"))
 
-    return render_template('new_order.html', menu=menu)
+    return render_template("edit_reservation.html", res=res)
 
-# --- Kitchen: View and update tickets ---
-@app.route('/kitchen')
+
+# ---------- DELETE ----------
+@app.route("/reservation/delete/<int:id>")
 @login_required
-def kitchen():
-    # Fetch all items that are not yet served, ordered by ID (oldest first)
-    tickets = OrderItem.query.filter(OrderItem.status != 'served').order_by(OrderItem.id).all()
-    return render_template('kitchen.html', tickets=tickets)
-
-# --- Kitchen: Update item status ---
-@app.route('/kitchen/update/<int:item_id>/<status>', methods=['POST'])
-@login_required
-def update_status(item_id, status):
-    item = OrderItem.query.get_or_404(item_id)
-    
-    valid_statuses = ['pending', 'preparing', 'ready', 'served']
-    if status not in valid_statuses:
-        flash("Error: Invalid status", 'error')
-        return redirect(url_for('kitchen'))
-
-    item.status = status
+def delete_reservation(id):
+    res = Reservation.query.get_or_404(id)
+    db.session.delete(res)
     db.session.commit()
-    flash(f"Item {item.menu_item.name} status updated to {status}", 'success')
-    return redirect(url_for('kitchen'))
-
-# --- Reservation Route ---
-@app.route('/reservation', methods=['GET', 'POST'])
-@login_required
-def reservation():
-    form = ReservationForm()
-    if form.validate_on_submit():
-        try:
-            guests = int(form.guests.data)
-            new_reservation = Reservation(
-                name=form.name.data,
-                phone=form.phone.data,
-                date=form.date.data,
-                time=form.time.data,
-                guests=guests
-            )
-            db.session.add(new_reservation)
-            db.session.commit()
-            flash('Reservation successfully made!', 'success')
-            return redirect(url_for('dashboard'))
-        except ValueError:
-            flash('Number of Guests must be a valid number.', 'error')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'An error occurred: {e}', 'error')
-
-    return render_template('reservation_form.html', form=form)
-
-# --- Reporting Feature ---
-@app.route('/report')
-@login_required
-def generate_report():
-    # 1. Fetch all data
-    all_orders = Order.query.all()
-    all_reservations = Reservation.query.all()
+    flash("Reservation deleted.")
+    return redirect(url_for("dashboard"))
     
-    # 2. Render the report template with the data
-    # The report.html template will be created in the next step
-    report_html_content = render_template('report_template.html', 
-                                          orders=all_orders, 
-                                          reservations=all_reservations)
-    
-    # 3. Save the rendered content to report.html file
-    report_path = 'report.html'
-    with open(report_path, 'w') as f:
-        f.write(report_html_content)
-        
-    flash(f"Report generated and saved to {report_path}", 'success')
-    # 4. Serve the generated file or redirect to a view of it
-    # For simplicity, we will redirect to the dashboard and inform the user
-    # that the file is saved in the working directory.
-    return redirect(url_for('dashboard'))
+@app.route("/menu")
+@login_required
+def menu():
+    menu_items = [
+        {"name": "Grilled Salmon", "category": "Main Course", "price": 24.99},
+        {"name": "Caesar Salad", "category": "Appetizer", "price": 12.99},
+    ]
+    return render_template("menu.html", menu_items=menu_items)
 
 
-if __name__ == '__main__':
+
+# ---------- RUN SERVER ----------
+if __name__ == "__main__":
     app.run(debug=True)

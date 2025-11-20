@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DineDesk — Menu Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .brand-gradient {
+            background: linear-gradient(90deg, #ff5f7a, #ff3a6b);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+        }
+        .category-tab {
+            padding: 12px 24px;
+            border: none;
+            background: #f3f4f6;
+            cursor: pointer;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .category-tab.active {
+            background: linear-gradient(90deg, #ff5f7a, #ff3a6b);
+            color: white;
+        }
+        .menu-item-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .menu-item-card:hover {
+            box-shadow: 0 8px 24px rgba(255, 95, 122, 0.15);
+            transform: translateY(-4px);
+        }
+        .menu-item-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #ff5f7a, #ff3a6b);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        .menu-item-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .menu-item-description {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .menu-item-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff5f7a;
+            margin-bottom: 12px;
+        }
+        .menu-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #ff5f7a, #ff3a6b);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 95, 122, 0.3);
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ff5f7a;
+            box-shadow: 0 0 0 3px rgba(255, 95, 122, 0.1);
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            width: 280px;
+        }
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-nav li {
+            margin-bottom: 8px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #f3f4f6;
+            color: #ff5f7a;
+        }
+        .container-main {
+            display: flex;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            background: #f9fafb;
+            overflow-y: auto;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+        .emoji-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .badge.appetizer {
+            background: #dbeafe;
+            color: #0c2340;
+        }
+        .badge.main {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge.dessert {
+            background: #fce7f3;
+            color: #831843;
+        }
+        .badge.setmenu {
+            background: #f3e8ff;
+            color: #5b21b6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- HEADER -->
+    <header class="brand-gradient text-white p-6 sticky top-0 z-40">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <h1 class="font-bold text-2xl">DineDesk</h1>
+                <span class="opacity-80 hidden md:block">Menu Management</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <button class="bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition" onclick="openAddModal()">
+                    + Add Menu Item
+                </button>
+                <a href="dashboard.html" class="bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition text-white no-underline">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container-main">
+        <!-- SIDEBAR -->
+        <aside class="sidebar hidden md:block">
+            <nav class="sidebar-nav">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="menu.html" class="active">Menu</a></li>
+                <li><a href="#">Reservations</a></li>
+                <li><a href="#">Reports</a></li>
+                <li><a href="#">Settings</a></li>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="max-w-7xl mx-auto">
+                <!-- PAGE HEADER -->
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900">Menu Management</h2>
+                    <p class="text-gray-600 mt-2">Manage and organize your restaurant menu items.</p>
+                </div>
+
+                <!-- CATEGORY TABS -->
+                <div class="card p-6 mb-8">
+                    <h3 class="font-semibold text-lg mb-4">Categories</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="category-tab active" onclick="switchCategory('appetizer')">🥗 Appetizers</button>
+                        <button class="category-tab" onclick="switchCategory('main')">🍽️ Main Course</button>
+                        <button class="category-tab" onclick="switchCategory('dessert')">🍰 Desserts</button>
+                        <button class="category-tab" onclick="switchCategory('setmenu')">🎁 Set Menu</button>
+                    </div>
+                </div>
+
+                <!-- MENU ITEMS GRID -->
+                <div id="menuContainer">
+                    <div class="menu-grid" id="menuGrid"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD/EDIT MODAL -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold" id="modalTitle">Add New Menu Item</h2>
+                <button onclick="closeModal()" style="font-size: 24px; background: none; border: none; cursor: pointer;">&times;</button>
+            </div>
+
+            <form id="menuForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="itemName">Item Name *</label>
+                    <input type="text" id="itemName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemCategory">Category *</label>
+                    <select id="itemCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="appetizer">Appetizer</option>
+                        <option value="main">Main Course</option>
+                        <option value="dessert">Dessert</option>
+                        <option value="setmenu">Set Menu</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemDescription">Description</label>
+                    <textarea id="itemDescription" rows="3" placeholder="Describe the dish..."></textarea>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="itemPrice">Price *</label>
+                        <input type="number" id="itemPrice" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemEmoji">Emoji Icon</label>
+                        <input type="text" id="itemEmoji" maxlength="2" placeholder="e.g., 🍕">
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit" class="btn btn-primary flex-1">Save Item</button>
+                    <button type="button" class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Menu data with sample items
+        let menuData = {
+            appetizer: [
+                { id: 1, name: "Bruschetta", description: "Toasted bread with tomato and garlic", price: 8.99, emoji: "🍞", category: "appetizer" },
+                { id: 2, name: "Garlic Bread", description: "Crispy bread with garlic butter", price: 6.99, emoji: "🧄", category: "appetizer" },
+                { id: 3, name: "Caesar Salad", description: "Fresh romaine with parmesan and croutons", price: 12.99, emoji: "🥗", category: "appetizer" },
+                { id: 4, name: "Shrimp Cocktail", description: "Chilled shrimp with cocktail sauce", price: 14.99, emoji: "🦐", category: "appetizer" },
+                { id: 5, name: "Calamari Fritti", description: "Crispy fried squid rings", price: 11.99, emoji: "🦑", category: "appetizer" },
+                { id: 6, name: "Spinach Dip", description: "Creamy spinach with bread", price: 9.99, emoji: "🥬", category: "appetizer" },
+                { id: 7, name: "Mozzarella Sticks", description: "Fried cheese sticks", price: 8.99, emoji: "🧀", category: "appetizer" },
+                { id: 8, name: "Nachos Supreme", description: "Loaded with cheese and toppings", price: 10.99, emoji: "🧅", category: "appetizer" },
+                { id: 9, name: "Chicken Wings", description: "Spicy buffalo wings", price: 12.99, emoji: "🍗", category: "appetizer" },
+                { id: 10, name: "Stuffed Mushrooms", description: "Mushrooms with herb filling", price: 9.99, emoji: "🍄", category: "appetizer" }
+            ],
+            main: [
+                { id: 11, name: "Grilled Salmon", description: "Fresh salmon with lemon butter", price: 24.99, emoji: "🐟", category: "main" },
+                { id: 12, name: "Filet Mignon", description: "Prime beef with truffle sauce", price: 32.99, emoji: "🥩", category: "main" },
+                { id: 13, name: "Pasta Carbonara", description: "Classic Italian pasta with bacon", price: 18.99, emoji: "🍝", category: "main" },
+                { id: 14, name: "Chicken Parmesan", description: "Breaded chicken with marinara", price: 19.99, emoji: "🍗", category: "main" },
+                { id: 15, name: "Lobster Tail", description: "Butter-poached lobster tail", price: 28.99, emoji: "🦞", category: "main" },
+                { id: 16, name: "Duck Confit", description: "Slow-cooked duck leg", price: 22.99, emoji: "🦆", category: "main" },
+                { id: 17, name: "Lamb Chops", description: "Herb-crusted lamb chops", price: 26.99, emoji: "🐑", category: "main" },
+                { id: 18, name: "Seafood Risotto", description: "Creamy risotto with mixed seafood", price: 23.99, emoji: "🦐", category: "main" },
+                { id: 19, name: "Beef Wellington", description: "Beef tenderloin in pastry", price: 29.99, emoji: "🥧", category: "main" },
+                { id: 20, name: "Vegetarian Lasagna", description: "Layers of pasta and vegetables", price: 16.99, emoji: "🍲", category: "main" }
+            ],
+            dessert: [
+                { id: 21, name: "Chocolate Cake", description: "Rich chocolate layer cake", price: 8.99, emoji: "🍰", category: "dessert" },
+                { id: 22, name: "Tiramisu", description: "Italian mascarpone dessert", price: 9.99, emoji: "🍮", category: "dessert" },
+                { id: 23, name: "Cheesecake", description: "New York style cheesecake", price: 8.99, emoji: "🎂", category: "dessert" },
+                { id: 24, name: "Crème Brûlée", description: "Caramelized custard", price: 10.99, emoji: "🍯", category: "dessert" },
+                { id: 25, name: "Panna Cotta", description: "Silky Italian custard", price: 9.99, emoji: "🥛", category: "dessert" },
+                { id: 26, name: "Chocolate Mousse", description: "Airy chocolate mousse", price: 7.99, emoji: "☁️", category: "dessert" },
+                { id: 27, name: "Strawberry Shortcake", description: "Fresh berries with cream", price: 8.99, emoji: "🍓", category: "dessert" },
+                { id: 28, name: "Apple Pie", description: "Warm apple pie with vanilla", price: 7.99, emoji: "🥧", category: "dessert" },
+                { id: 29, name: "Lemon Sorbet", description: "Refreshing lemon ice", price: 6.99, emoji: "🍋", category: "dessert" },
+                { id: 30, name: "Chocolate Lava Cake", description: "Molten chocolate center", price: 9.99, emoji: "🌋", category: "dessert" }
+            ],
+            setmenu: [
+                { id: 31, name: "Romantic Dinner for Two", description: "Appetizer + Main + Dessert + Wine", price: 79.99, emoji: "💑", category: "setmenu" },
+                { id: 32, name: "Business Lunch Special", description: "Soup + Main + Coffee", price: 24.99, emoji: "💼", category: "setmenu" },
+                { id: 33, name: "Family Feast", description: "3 Mains + 2 Sides + Dessert for 4", price: 89.99, emoji: "👨‍👩‍👧‍👦", category: "setmenu" }
+            ]
+        };
+
+        let currentCategory = 'appetizer';
+        let editingId = null;
+        let nextId = 34;
+
+        // Initialize
+        function init() {
+            renderMenuItems();
+        }
+
+        function switchCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            renderMenuItems();
+        }
+
+        function renderMenuItems() {
+            const items = menuData[currentCategory];
+            const grid = document.getElementById('menuGrid');
+            
+            grid.innerHTML = items.map(item => `
+                <div class="menu-item-card">
+                    <div class="menu-item-image">
+                        ${item.emoji || '🍽️'}
+                    </div>
+                    <div class="emoji-icon" style="text-align: center; margin-bottom: 0;"></div>
+                    <div class="badge ${item.category}">${getCategoryLabel(item.category)}</div>
+                    <div class="menu-item-name">${item.name}</div>
+                    <div class="menu-item-description">${item.description}</div>
+                    <div class="menu-item-price">$${item.price.toFixed(2)}</div>
+                    <div class="menu-item-actions">
+                        <button class="btn btn-secondary btn-sm flex-1" onclick="editItem(${item.id})">Edit</button>
+                        <button class="btn btn-danger btn-sm flex-1" onclick="deleteItem(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryLabel(category) {
+            const labels = {
+                appetizer: '🥗 Appetizer',
+                main: '🍽️ Main Course',
+                dessert: '🍰 Dessert',
+                setmenu: '🎁 Set Menu'
+            };
+            return labels[category] || category;
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Menu Item';
+            document.getElementById('menuForm').reset();
+            document.getElementById('itemCategory').value = currentCategory;
+            document.getElementById('menuModal').classList.add('active');
+        }
+
+        function editItem(id) {
+            const item = findItemById(id);
+            if (!item) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Menu Item';
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemCategory').value = item.category;
+            document.getElementById('itemDescription').value = item.description;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemEmoji').value = item.emoji;
+            document.getElementById('menuModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('menuModal').classList.remove('active');
+            editingId = null;
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+
+            const formData = {
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                description: document.getElementById('itemDescription').value,
+                price: parseFloat(document.getElementById('itemPrice').value),
+                emoji: document.getElementById('itemEmoji').value || '🍽️'
+            };
+
+            if (editingId) {
+                const item = findItemById(editingId);
+                if (item) {
+                    Object.assign(item, formData);
+                }
+            } else {
+                const newItem = {
+                    id: nextId++,
+                    ...formData
+                };
+                if (!menuData[formData.category]) {
+                    menuData[formData.category] = [];
+                }
+                menuData[formData.category].push(newItem);
+            }
+
+            closeModal();
+            renderMenuItems();
+        }
+
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                for (let category in menuData) {
+                    menuData[category] = menuData[category].filter(item => item.id !== id);
+                }
+                renderMenuItems();
+            }
+        }
+
+        function findItemById(id) {
+            for (let category in menuData) {
+                const item = menuData[category].find(item => item.id === id);
+                if (item) return item;
+            }
+            return null;
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

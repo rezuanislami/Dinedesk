@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slack Welcome</title>
+    <title>DineDesk — Welcome</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +13,7 @@
         }
         .sidebar {
             background-color: #4A154B;
-            width: 200px;
+            width: 220px;
         }
         .main {
             flex: 1;
@@ -23,48 +22,54 @@
             justify-content: center;
             align-items: center;
             text-align: center;
+            padding: 20px;
         }
         h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
+            font-size: 2.4em;
+            margin-bottom: 12px;
         }
         p {
-            font-size: 1em;
+            font-size: 1.1em;
             color: #555;
+            max-width: 420px;
         }
         .btn {
             background-color: #2EB67D;
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-size: 1em;
+            padding: 14px 28px;
+            font-size: 1.1em;
             cursor: pointer;
-            border-radius: 4px;
-            margin-top: 20px;
+            border-radius: 6px;
+            margin-top: 24px;
             text-decoration: none;
+            display: inline-block;
         }
         .btn:hover {
             background-color: #28a165;
         }
-        .tutorial {
-            margin-top: 10px;
+        .small-text {
+            margin-top: 18px;
             font-size: 0.9em;
-            color: #888;
-        }
-        .tutorial a {
-            color: #888;
-            text-decoration: underline;
+            color: #777;
         }
     </style>
 </head>
+
 <body>
     <div class="sidebar"></div>
+
     <div class="main">
-        <h1>👋 Welcome! to DINEDESK</h1>
-        <p>Dinedesk is a restaurent base webside to advance your business .</p>
-        <a href="login.html" class="btn">Explore Dinedisk</a>
-        <div class="tutorial">
-            Not your first Slack team? <a href="#">Skip the tutorial</a>
+        <h1>👋 Welcome to DineDesk</h1>
+        <p>DineDesk is a complete restaurant management platform designed to help your business grow effortlessly.</p>
+
+        <!-- Flask-compatible button -->
+        <a href="{{ url_for('login') }}" class="btn">
+            Explore DineDesk →
+        </a>
+
+        <div class="small-text">
+            Already familiar with DineDesk? Continue to login.
         </div>
     </div>
 </body>
