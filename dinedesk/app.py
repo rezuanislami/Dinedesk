@@ -179,6 +179,52 @@ def new_order():
         # Add more categories...
     }
     return render_template("new_order.html", menu_data=menu_data)
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
+import json
+
+@app.route("/save_restaurant", methods=["POST"])
+def save_restaurant():
+    data = {
+        "name": request.form.get("restaurant-name"),
+        "phone": request.form.get("restaurant-phone"),
+        "email": request.form.get("restaurant-email"),
+        "address": request.form.get("restaurant-address"),
+        "opening": request.form.get("opening-time"),
+        "closing": request.form.get("closing-time")
+    }
+
+    with open("restaurant_settings.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+    return redirect(url_for("settings"))
+
+from flask import Flask, render_template, jsonify
+
+
+
+@app.route('/floor')
+def floor_plan():
+    reservations = [
+        {"id": 1, "name": "Phillipe Carrera-Jones", "guests": 4, "time": "11:00", "table": "C224", "status": "seated"},
+        {"id": 2, "name": "Jane Doe", "guests": 2, "time": "12:30", "table": "22", "status": "confirmed"},
+        # ...
+    ]
+
+    tables = [
+        {"id": "C224", "room": "indoor", "shape": "round", "size": "60px", "top": "100px", "left": "150px", "capacity": 4},
+        {"id": "22", "room": "indoor", "shape": "square", "size": "60px", "top": "100px", "left": "250px", "capacity": 2},
+        # ...
+    ]
+
+    return render_template("floor.html", reservations=reservations, tables=tables)
+
+
+@app.route('/staff')
+def staff():
+   return render_template('staff.html')
+
 
 
 # ---------- RUN SERVER ----------

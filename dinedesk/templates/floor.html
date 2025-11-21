@@ -3,466 +3,408 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Floor Plan</title>
-    <!-- Tailwind CSS -->
+    <title>DineDesk — Floor Plan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .brand-gradient { background: linear-gradient(90deg,#ff5f7a,#ff3a6b); }
-        :root {
-            --bg-dark: #1e1e1e;
-            --bg-medium: #2c2c2c;
-            --text-light: #ffffff;
-            --text-medium: #aaaaaa;
-            --accent-green: #4caf50;
-            --accent-orange: #ff9800;
-            --accent-brown: #8b6f5e;
-            --table-occupied: #ff9800;
-            --table-available: #555555;
+        /* --- DineDesk Theme Styles (from dashboard.html) --- */
+        .brand-gradient {
+            background: linear-gradient(90deg, #ff5f7a, #ff3a6b);
         }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+        }
+        .sidebar-nav a {
+            display: block; padding: 12px 16px; border-radius: 8px; text-decoration: none; color: #6b7280; font-weight: 500; transition: all 0.2s;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: #f3f4f6; color: #ff5f7a;
+        }
+        .container-main { display: flex; min-height: 100vh; }
+        .main-content { flex: 1; padding: 24px; background: #f9fafb; overflow-y: auto; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(90deg, #ff5f7a, #ff3a6b); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 95, 122, 0.3); }
+        .btn-secondary { background: #f3f4f6; color: #374151; }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .tablet-mockup {
-            width: 900px;
-            height: 600px;
-            background-color: var(--bg-medium);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        /* Adjust body to remove centering and allow header to take full width */
-        body {
-            display: block;
-            min-height: auto;
-        }
-        .main-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 70px); /* Adjust for header height */
-            padding: 20px 0;
-        }
-
-        /* Top Navigation Bar */
-        .top-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: var(--bg-dark);
-            border-bottom: 1px solid #333;
-        }
-
-        .top-nav-left, .top-nav-right {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-icon {
-            font-size: 24px;
-            margin: 0 10px;
-            cursor: pointer;
-            color: var(--text-medium);
-        }
-
-        .nav-icon.active {
-            color: var(--accent-green);
-        }
-
-        .date-time {
-            display: flex;
-            align-items: center;
-            background-color: var(--bg-medium);
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .date-time span {
-            margin: 0 5px;
-        }
-
-        /* Main Content Area */
-        .main-content {
-            display: flex;
-            flex-grow: 1;
-            overflow: hidden;
-        }
-
-        /* Sidebar (Reservation List - simplified) */
-        .sidebar {
-            width: 300px;
-            background-color: var(--bg-dark);
-            border-right: 1px solid #333;
-            padding: 10px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .search-bar {
-            padding: 10px 0;
-            margin-bottom: 10px;
-        }
-        .reservation-list {
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-        .reservation-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 5px;
-            background-color: var(--bg-dark);
-            border-radius: 8px;
-            border-left: 4px solid transparent;
-            cursor: pointer;
-            transition: background-color 0.2s, border-left-color 0.2s;
-        }
-        .reservation-item:hover {
-            background-color: #252525;
-        }
-        .reservation-item.occupied {
-            border-left-color: var(--table-occupied);
-        }
-        .reservation-item-info {
-            flex-grow: 1;
-        }
-        .reservation-item-name {
-            font-weight: bold;
-            color: var(--text-light);
-        }
-        .reservation-item-details {
-            font-size: 12px;
-            color: var(--text-medium);
-        }
-        .reservation-item-status {
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            background-color: var(--accent-green);
-            color: var(--bg-dark);
-        }
-
-        /* Floor Plan Area */
-        .floor-plan-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-medium);
-            padding: 10px;
-        }
-
-        .room-tabs {
-            display: flex;
-            margin-bottom: 10px;
-            background-color: var(--bg-dark);
-            border-radius: 8px;
-            padding: 5px;
-        }
-
-        .room-tab {
-            padding: 8px 15px;
-            cursor: pointer;
-            color: var(--text-medium);
-            font-weight: 600;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-
-        .room-tab.active {
-            background-color: var(--bg-medium);
-            color: var(--text-light);
-        }
-
-        /* Floor Grid */
-        .floor-grid {
-            flex-grow: 1;
-            /* The floor-grid will now be a container for different floor plans */
-            position: relative;
-            overflow: auto;
-            flex-grow: 1;
-            padding: 20px;
-        }
-
-        .floor-plan {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            min-height: 500px; /* Ensure a minimum size for the floor plan */
-            display: none; /* Hidden by default */
-        }
-
-        .floor-plan.active {
-            display: block;
-        }
-        }
-
-        /* Table Styling (Placeholder) */
-        .table {
-            position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--text-light);
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-
-        .table-round {
-            border-radius: 50%;
-        }
-
-        .table-square {
-            border-radius: 5px;
-        }
-
-        .table-occupied {
-            background-color: var(--table-occupied);
-        }
-
-        .table-available {
-            background-color: var(--table-available);
-        }
+        /* --- Floor Plan Specific Styles --- */
+        .floor-plan-container { display: flex; height: calc(100vh - 150px); min-height: 600px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+        .floor-sidebar { width: 300px; background-color: white; border-right: 1px solid #e5e7eb; padding: 16px; display: flex; flex-direction: column; overflow-y: auto; }
+        .floor-area { flex-grow: 1; background-color: #f3f4f6; padding: 20px; overflow: auto; }
+        .search-bar input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
+        .reservation-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin-bottom: 8px; background-color: #fff; border-radius: 8px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        .reservation-item:hover { background-color: #f9fafb; }
+        .reservation-item.occupied { border-left-color: #ff3a6b; }
+        .reservation-item-name { font-weight: 600; color: #1f2937; font-size: 14px; }
+        .reservation-item-details { font-size: 12px; color: #6b7280; }
+        .reservation-item-status { font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; }
+        .room-tabs { display: flex; margin-bottom: 16px; border-bottom: 2px solid #e5e7eb; }
+        .room-tab { padding: 10px 15px; cursor: pointer; color: #6b7280; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .room-tab:hover { color: #ff5f7a; }
+        .room-tab.active { color: #ff3a6b; border-bottom-color: #ff3a6b; font-weight: 600; }
+        .floor-grid { position: relative; width: 100%; height: 100%; min-height: 500px; }
+        .floor-plan { position: relative; width: 100%; height: 100%; display: none; }
+        .floor-plan.active { display: block; }
+        .table { position: absolute; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; color: white; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); transition: all 0.2s; border: 2px solid transparent; }
+        .table:hover { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
+        .table-round { border-radius: 50%; }
+        .table-square { border-radius: 8px; }
+        .table-occupied { background-color: #ff3a6b; }
+        .table-available { background-color: #10b981; }
+        .table-reserved { background-color: #f59e0b; }
+        .table-info { font-size: 10px; font-weight: normal; margin-top: 2px; }
+        .date-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 8px; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        .date-nav button { background: #f3f4f6; color: #4b5563; border-radius: 4px; padding: 4px 8px; font-weight: 600; }
+        .date-nav-display { flex-grow: 1; text-align: center; font-weight: 600; color: #1f2937; }
+        .time-slots { display: flex; gap: 8px; }
+        .time-slot { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; background-color: #f3f4f6; color: #4b5563; }
+        .time-slot.active { background-color: #ff3a6b; color: white; box-shadow: 0 2px 5px rgba(255, 60, 107, 0.3); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); position: relative; animation: fadeIn 0.3s ease-out; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 1.5rem; font-weight: 700; color: #1f2937; }
+        .modal-close { font-size: 2rem; font-weight: 300; color: #9ca3af; cursor: pointer; line-height: 1; }
+        .modal-close:hover { color: #ff3a6b; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #f3f4f6; }
+        .detail-label { font-weight: 500; color: #6b7280; }
+        .detail-value { font-weight: 600; color: #1f2937; }
+        .detail-value.status-confirmed { color: #10b981; }
+        .detail-value.status-pending { color: #f59e0b; }
+        .detail-value.status-seated { color: #ff3a6b; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #374151; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #ff5f7a; box-shadow: 0 0 0 3px rgba(255, 95, 122, 0.1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
-    <header class="brand-gradient text-white p-4 flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <div class="ml-2 font-bold text-xl">DineDesk</div>
-      <div class="hidden md:block opacity-90">Restaurant Dashboard</div>
-    </div>
-    <div class="flex items-center gap-3">
-      <button class="bg-white/20 px-4 py-2 rounded-md">Create Reservation</button>
-      <div class="flex items-center gap-2">
-        <img src="https://i.pravatar.cc/40" class="rounded-full" alt="user">
-        <div class="text-sm">
-         Rezuan_rokib <br>
-          <span class="text-xs opacity-80">Super Admin</span>
-        </div>
-      </div>
-    </div>
-  </header>
-  <div class="main-container">
-    <div class="tablet-mockup">
-        <div class="top-nav">
-            <div class="top-nav-left">
-                <span class="nav-icon">V</span>
-                <span class="nav-icon active">::</span>
-                <span class="nav-icon">[]</span>
+<body class="bg-gray-50">
+    <header class="brand-gradient text-white p-6 sticky top-0 z-40">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <h1 class="font-bold text-2xl">DineDesk</h1>
+                <span class="opacity-80 hidden md:block">Restaurant Dashboard</span>
             </div>
-            <div class="date-time">
-                <span class="nav-icon" id="prevDayButton"><</span>
-                <span id="currentDateDisplay">Wed, 14 Feb</span>
-                <span class="nav-icon" id="nextDayButton">></span>
-                <span class="room-tab active">Today</span>
-                <span class="room-tab">Evening</span>
-            </div>
-            <div class="top-nav-right">
-                <span class="nav-icon">@</span>
-                <span class="nav-icon active">C</span>
+            <div class="flex items-center gap-6">
+                <button class="bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition" onclick="openCreateModal()">+ New Reservation</button>
+                <div class="flex items-center gap-3"><span class="font-medium">Admin User</span><span class="text-sm opacity-80">Super Admin</span></div>
             </div>
         </div>
+    </header>
 
-        <div class="main-content">
-            <div class="sidebar">
-                <div class="search-bar">
-                    <input type="text" id="reservationSearch" placeholder="Search for a reservation..." style="width: 100%; padding: 8px; border: none; background-color: var(--bg-dark); color: var(--text-light); border-radius: 5px; border: 1px solid #333;">
+    <div class="container-main">
+        <aside class="sidebar card hidden md:block" style="width: 280px; border-right: none; box-shadow: none;">
+            <nav class="sidebar-nav">
+                <li><a href="#reservations">Reservations</a></li>
+                <li><a href="{{ url_for('menu') }}">Menu</a></li>
+                <li><a href="{{ url_for('new_order') }}">New Order</a></li>
+                <li><a href="#">Staff</a></li>
+                <li><a href="{{ url_for('settings') }}" class="active">Settings</a></li>
+                <li><a href="{{ url_for('floor_plan') }}" class="active">Floor Plan</a></li>
+
+                
+                <li><a href="#">Reports</a></li>
+                <li><a href="{{ url_for('settings') }}" class="active">Settings</a></li>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Floor Plan Management</h2>
+                    <p class="text-gray-600 mt-2">Visualize and manage table status and reservations in real-time.</p>
                 </div>
-                <div class="reservation-list">
-                    <!-- Realistic Reservation List Items -->
-                    <div class="reservation-item occupied">
-                        <div class="reservation-item-info">
-                            <div class="reservation-item-name">Phillipe Carrera-Jones</div>
-                            <div class="reservation-item-details">11:00 | 4 Guests | C224</div>
+
+                <div class="floor-plan-container card">
+                    <div class="floor-sidebar">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Reservations</h3>
+                        <div class="date-nav">
+                            <button id="prevDayButton" class="text-lg">&lt;</button>
+                            <span id="currentDateDisplay" class="date-nav-display"></span>
+                            <button id="nextDayButton" class="text-lg">&gt;</button>
                         </div>
-                        <div class="reservation-item-status" style="background-color: var(--table-occupied);">442</div>
-                    </div>
-                    <div class="reservation-item">
-                        <div class="reservation-item-info">
-                            <div class="reservation-item-name">Jane Doe</div>
-                            <div class="reservation-item-details">12:30 | 2 Guests | T54</div>
+                        <div class="time-slots mb-4">
+                            <div class="time-slot active" data-slot="today">Today</div>
+                            <div class="time-sl/liot" data-slot="evening">Evening</div>
                         </div>
-                        <div class="reservation-item-status" style="background-color: var(--accent-green);">PAID</div>
-                    </div>
-                    <div class="reservation-item occupied">
-                        <div class="reservation-item-info">
-                            <div class="reservation-item-name">Steve Roger</div>
-                            <div class="reservation-item-details">13:00 | 3 Guests | C223</div>
-                        </div>
-                        <div class="reservation-item-status" style="background-color: var(--table-occupied);">446</div>
-                    </div>
-                    <div class="reservation-item">
-                        <div class="reservation-item-info">
-                            <div class="reservation-item-name">Annabelle Badosa</div>
-                            <div class="reservation-item-details">14:00 | 6 Guests | M1</div>
-                        </div>
-                        <div class="reservation-item-status" style="background-color: var(--accent-green);">POS 23</div>
-                    </div>
-                    <div class="reservation-item">
-                        <div class="reservation-item-info">
-                            <div class="reservation-item-name">Vanessa Jones</div>
-                            <div class="reservation-item-details">19:00 | 4 Guests | O3</div>
-                        </div>
-                        <div class="reservation-item-status" style="background-color: var(--accent-green);">ARRIVED</div>
-                    </div>
-                </div>
-            </div>
-            <div class="floor-plan-area">
-                <div class="room-tabs">
-                    <div class="room-tab" data-room="outdoor">Outdoor</div>
-                    <div class="room-tab active" data-room="indoor">Indoor</div>
-                    <div class="room-tab" data-room="main">Main Room</div>
-                    <div class="room-tab" data-room="ballroom">Ballroom</div>
-                </div>
-                <div class="floor-grid" id="floorGridContainer">
-                    <div id="indoor-plan" class="floor-plan active">
-                        <!-- Tables for Indoor -->
-                        <div class="table table-round table-occupied" style="width: 50px; height: 50px; top: 100px; left: 150px;">C224</div>
-                        <div class="table table-square table-available" style="width: 50px; height: 30px; top: 100px; left: 250px;">22</div>
-                        <div class="table table-square table-available" style="width: 50px; height: 30px; top: 100px; left: 310px;">23</div>
-                        <div class="table table-round table-occupied" style="width: 50px; height: 50px; top: 200px; left: 150px;">C223</div>
-                        <div class="table table-round table-occupied" style="width: 50px; height: 50px; top: 300px; left: 150px;">C225</div>
-                        <div class="table table-round table-available" style="width: 30px; height: 30px; top: 200px; left: 400px;">C1</div>
-                        <div class="table table-round table-available" style="width: 30px; height: 30px; top: 200px; left: 440px;">C2</div>
-                        <div class="table table-round table-available" style="width: 30px; height: 30px; top: 240px; left: 400px;">C3</div>
-                        <div class="table table-round table-available" style="width: 30px; height: 30px; top: 240px; left: 440px;">C4</div>
-                        <div class="table table-round table-available" style="width: 50px; height: 50px; top: 150px; left: 550px;">C220</div>
-                        <div class="table table-square table-available" style="width: 50px; height: 50px; top: 350px; left: 400px;">S4</div>
-                        <div class="table table-square table-available" style="width: 50px; height: 50px; top: 350px; left: 460px;">S5</div>
-                        <div class="table table-square table-available" style="width: 50px; height: 50px; top: 350px; left: 520px;">S11</div>
-                        <div class="table table-round table-available" style="width: 60px; height: 60px; top: 450px; left: 300px; background-color: var(--accent-green);">RB</div>
-                        <div class="table table-square table-available" style="width: 60px; height: 60px; top: 350px; left: 580px; transform: rotate(45deg);">322</div>
-                        <div class="table table-square table-available" style="width: 60px; height: 60px; top: 420px; left: 580px; transform: rotate(45deg);">321</div>
-                        
-                        <!-- Other elements (Piano, Booths, etc.) -->
-                        <div style="position: absolute; top: 150px; left: 200px; width: 150px; height: 50px; background-color: #444; border-radius: 5px;"></div>
-                        <div style="position: absolute; top: 250px; left: 200px; width: 100px; height: 50px; background-color: #444; border-radius: 5px;"></div>
-                        <div style="position: absolute; top: 480px; left: 480px; width: 60px; height: 80px; background-color: #444; border-radius: 5px;">Piano</div>
-                        <div style="position: absolute; top: 300px; left: 250px; width: 150px; height: 100px; background-color: #444; border-radius: 50px / 100px; transform: rotate(-10deg);"></div>
-                        <div style="position: absolute; top: 350px; left: 430px; color: var(--accent-green);">X</div>
-                        <div style="position: absolute; top: 350px; left: 500px; color: var(--accent-green);">X</div>
-                        <div style="position: absolute; top: 350px; left: 560px; color: var(--accent-green);">X</div>
+                        <div class="search-bar"><input type="text" id="reservationSearch" placeholder="Search reservation or table..."></div>
+                        <div class="reservation-list flex-grow overflow-y-auto" id="reservationList"></div>
                     </div>
 
-                    <div id="outdoor-plan" class="floor-plan">
-                        <!-- Tables for Outdoor (Example) -->
-                        <div class="table table-round table-available" style="width: 40px; height: 40px; top: 50px; left: 50px;">O1</div>
-                        <div class="table table-round table-available" style="width: 40px; height: 40px; top: 50px; left: 100px;">O2</div>
-                        <div class="table table-square table-occupied" style="width: 60px; height: 60px; top: 150px; left: 150px;">O3</div>
-                        <div class="table table-square table-available" style="width: 60px; height: 60px; top: 150px; left: 220px;">O4</div>
-                        <div style="position: absolute; top: 10px; left: 10px; color: var(--accent-green); font-size: 20px;">Outdoor Area</div>
-                    </div>
-
-                    <div id="main-plan" class="floor-plan">
-                        <!-- Tables for Main Room (Example) -->
-                        <div class="table table-square table-occupied" style="width: 80px; height: 80px; top: 100px; left: 100px;">M1</div>
-                        <div class="table table-square table-available" style="width: 80px; height: 80px; top: 100px; left: 200px;">M2</div>
-                        <div class="table table-round table-available" style="width: 50px; height: 50px; top: 250px; left: 150px;">M3</div>
-                        <div style="position: absolute; top: 10px; left: 10px; color: var(--accent-green); font-size: 20px;">Main Room</div>
-                    </div>
-
-                    <div id="ballroom-plan" class="floor-plan">
-                        <!-- Tables for Ballroom (Example) -->
-                        <div class="table table-round table-occupied" style="width: 100px; height: 100px; top: 150px; left: 250px;">B1</div>
-                        <div style="position: absolute; top: 10px; left: 10px; color: var(--accent-green); font-size: 20px;">Ballroom</div>
+                    <div class="floor-area">
+                        <div class="room-tabs">
+                            <div class="room-tab" data-room="outdoor">Outdoor</div>
+                            <div class="room-tab active" data-room="indoor">Indoor</div>
+                            <div class="room-tab" data-room="main">Main Room</div>
+                            <div class="room-tab" data-room="ballroom">Ballroom</div>
+                        </div>
+                        <div class="floor-grid" id="floorGridContainer">
+                            <div id="indoor-plan" class="floor-plan active"></div>
+                            <div id="outdoor-plan" class="floor-plan"></div>
+                            <div id="main-plan" class="floor-plan"></div>
+                            <div id="ballroom-plan" class="floor-plan"></div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </main>
+    </div>
+
+    <!-- Reservation Details Modal -->
+    <div id="reservationDetailsModal" class="modal" onclick="if(event.target.id === 'reservationDetailsModal') closeModal()">
+        <div class="modal-content card" id="modalDetailsContent"></div>
+    </div>
+
+    <!-- New Reservation Form Modal -->
+    <div id="newReservationModal" class="modal" onclick="if(event.target.id === 'newReservationModal') closeModal()">
+        <div class="modal-content card" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3 id="newReservationTitle">New Reservation</h3>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="newReservationForm">
+                <input type="hidden" id="formTableId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group"><label for="guestName">Guest Name</label><input type="text" id="guestName" required placeholder="e.g., John Doe"></div>
+                    <div class="form-group"><label for="guestGuests">Number of Guests</label><input type="number" id="guestGuests" required min="1" value="2" placeholder="e.g., 4"></div>
+                    <div class="form-group"><label for="guestTime">Time</label><input type="time" id="guestTime" required></div>
+                    <div class="form-group"><label for="guestPhone">Phone (Optional)</label><input type="tel" id="guestPhone" placeholder="e.g., 555-1234"></div>
+                </div>
+                <div class="form-group"><label for="guestNotes">Notes (Optional)</label><textarea id="guestNotes" rows="2" placeholder="e.g., Birthday celebration"></textarea></div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Reservation</button>
+                </div>
+            </form>
         </div>
     </div>
-  </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Simulated Data --- //
+            const reservationsData = [
+                { id: 1, name: 'Phillipe Carrera-Jones', guests: 4, time: '11:00', table: 'C224', status: 'seated', phone: '555-1234', notes: 'Birthday celebration.' },
+                { id: 2, name: 'Jane Doe', guests: 2, time: '12:30', table: '22', status: 'confirmed', phone: '555-5678', notes: 'Needs high chair.' },
+                { id: 3, name: 'Steve Roger', guests: 3, time: '13:00', table: 'C223', status: 'seated', phone: '555-9012', notes: 'Quick lunch.' },
+                { id: 4, name: 'Tony Stark', guests: 6, time: '14:00', table: 'M1', status: 'confirmed', phone: '555-3456', notes: 'Business meeting.' },
+                { id: 5, name: 'Vanessa Jones', guests: 4, time: '19:00', table: 'O3', status: 'confirmed', phone: '555-7890', notes: 'Outdoor seating.' },
+            ];
+
+            const tablesData = [
+                { id: 'C224', room: 'indoor', shape: 'round', size: '60px', top: '100px', left: '150px', capacity: 4 },
+                { id: '22', room: 'indoor', shape: 'square', size: '60px', height: '40px', top: '100px', left: '250px', capacity: 2 },
+                { id: '23', room: 'indoor', shape: 'square', size: '60px', height: '40px', top: '100px', left: '330px', capacity: 2 },
+                { id: 'C223', room: 'indoor', shape: 'round', size: '60px', top: '200px', left: '150px', capacity: 3 },
+                { id: 'C225', room: 'indoor', shape: 'round', size: '60px', top: '300px', left: '150px', capacity: 4 },
+                { id: 'C1', room: 'indoor', shape: 'round', size: '40px', top: '200px', left: '400px', capacity: 2 },
+                { id: 'C2', room: 'indoor', shape: 'round', size: '40px', top: '200px', left: '450px', capacity: 2 },
+                { id: 'C3', room: 'indoor', shape: 'round', size: '40px', top: '250px', left: '400px', capacity: 2 },
+                { id: 'C4', room: 'indoor', shape: 'round', size: '40px', top: '250px', left: '450px', capacity: 2 },
+                { id: 'C220', room: 'indoor', shape: 'round', size: '60px', top: '150px', left: '550px', capacity: 4 },
+                { id: 'S4', room: 'indoor', shape: 'square', size: '60px', top: '350px', left: '400px', capacity: 6 },
+                { id: 'S5', room: 'indoor', shape: 'square', size: '60px', top: '350px', left: '470px', capacity: 6 },
+                { id: 'S11', room: 'indoor', shape: 'square', size: '60px', top: '350px', left: '540px', capacity: 6 },
+                { id: 'RB', room: 'indoor', shape: 'round', size: '70px', top: '450px', left: '300px', capacity: 8, reserved: true },
+                { id: '322', room: 'indoor', shape: 'square', size: '70px', top: '350px', left: '650px', capacity: 8, rotate: '45deg' },
+                { id: '321', room: 'indoor', shape: 'square', size: '70px', top: '430px', left: '650px', capacity: 8, rotate: '45deg' },
+                { id: 'O1', room: 'outdoor', shape: 'round', size: '50px', top: '50px', left: '50px', capacity: 4 },
+                { id: 'O2', room: 'outdoor', shape: 'round', size: '50px', top: '50px', left: '120px', capacity: 4 },
+                { id: 'O3', room: 'outdoor', shape: 'square', size: '70px', top: '150px', left: '150px', capacity: 4 },
+                { id: 'O4', room: 'outdoor', shape: 'square', size: '70px', top: '150px', left: '230px', capacity: 6 },
+                { id: 'M1', room: 'main', shape: 'square', size: '80px', top: '100px', left: '100px', capacity: 6 },
+                { id: 'M2', room: 'main', shape: 'square', size: '80px', top: '100px', left: '200px', capacity: 6 },
+                { id: 'M3', room: 'main', shape: 'round', size: '60px', top: '250px', left: '150px', capacity: 4 },
+                { id: 'B1', room: 'ballroom', shape: 'round', size: '100px', top: '150px', left: '250px', capacity: 12 },
+            ];
+
+            // --- Core Functions --- //
+            function getTableStatus(tableId) {
+                const reservation = reservationsData.find(res => res.table === tableId);
+                if (reservation) return { status: 'occupied', reservation };
+                const table = tablesData.find(t => t.id === tableId);
+                if (table && table.reserved) return { status: 'reserved', reservation: null };
+                return { status: 'available', reservation: null };
+            }
+
+            function renderFloorPlan(roomName) {
+                const planContainer = document.getElementById(`${roomName}-plan`);
+                if (!planContainer) return;
+                planContainer.innerHTML = ''; // Clear previous tables
+
+                // Add static elements for the indoor room
+                if (roomName === 'indoor') {
+                    planContainer.innerHTML += `
+                        <div style="position: absolute; top: 150px; left: 200px; width: 150px; height: 50px; background-color: #d1d5db; border-radius: 5px; color: #4b5563; display: flex; align-items: center; justify-content: center; font-size: 12px;">Bar Counter</div>
+                        <div style="position: absolute; top: 250px; left: 200px; width: 100px; height: 50px; background-color: #d1d5db; border-radius: 5px; color: #4b5563; display: flex; align-items: center; justify-content: center; font-size: 12px;">Host Stand</div>
+                        <div style="position: absolute; top: 480px; left: 480px; width: 60px; height: 80px; background-color: #d1d5db; border-radius: 5px; color: #4b5563; display: flex; align-items: center; justify-content: center; font-size: 12px;">Piano</div>
+                        <div style="position: absolute; top: 300px; left: 250px; width: 150px; height: 100px; background-color: #d1d5db; border-radius: 50px / 100px; transform: rotate(-10deg); color: #4b5563; display: flex; align-items: center; justify-content: center; font-size: 12px;">Lounge Seating</div>
+                    `;
+                }
+
+                tablesData.filter(t => t.room === roomName).forEach(table => {
+                    const statusInfo = getTableStatus(table.id);
+                    let statusClass = 'table-available';
+                    if (statusInfo.status === 'occupied') statusClass = 'table-occupied';
+                    if (statusInfo.status === 'reserved') statusClass = 'table-reserved';
+
+                    const tableText = statusInfo.reservation ? statusInfo.reservation.name.split(' ')[0] : table.id;
+                    const infoText = statusInfo.reservation ? `${statusInfo.reservation.guests} Guests @ ${statusInfo.reservation.time}` : `${table.capacity} Seats`;
+
+                    const tableDiv = document.createElement('div');
+                    tableDiv.className = `table table-${table.shape} ${statusClass}`;
+                    tableDiv.style.cssText = `width: ${table.size}; height: ${table.height || table.size}; top: ${table.top}; left: ${table.left}; ${table.rotate ? `transform: rotate(${table.rotate});` : ''}`;
+                    tableDiv.setAttribute('data-table-id', table.id);
+                    tableDiv.innerHTML = `${tableText}<span class="table-info">${infoText}</span>`;
+                    tableDiv.addEventListener('click', () => handleTableClick(table.id));
+                    planContainer.appendChild(tableDiv);
+                });
+            }
+
+            function renderReservationList() {
+                const listContainer = document.getElementById('reservationList');
+                listContainer.innerHTML = '';
+                reservationsData.sort((a, b) => a.time.localeCompare(b.time)).forEach(res => {
+                    const statusClass = res.status === 'seated' ? 'occupied' : '';
+                    const statusColor = res.status === 'confirmed' ? '#10b981' : (res.status === 'seated' ? '#ff3a6b' : '#f59e0b');
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = `reservation-item ${statusClass}`;
+                    itemDiv.innerHTML = `
+                        <div class="reservation-item-info">
+                            <div class="reservation-item-name">${res.name}</div>
+                            <div class="reservation-item-details">${res.time} | ${res.guests} Guests | Table ${res.table}</div>
+                        </div>
+                        <div class="reservation-item-status" style="background-color: ${statusColor};">${res.status.toUpperCase()}</div>
+                    `;
+                    listContainer.appendChild(itemDiv);
+                });
+            }
+
+            // --- Modal & Click Handling --- //
+            function handleTableClick(tableId) {
+                const statusInfo = getTableStatus(tableId);
+                if (statusInfo.status === 'available') {
+                    openNewReservationModal(tableId);
+                } else {
+                    openReservationDetailsModal(tableId);
+                }
+            }
+
+            function openReservationDetailsModal(tableId) {
+                const statusInfo = getTableStatus(tableId);
+                const modal = document.getElementById('reservationDetailsModal');
+                const content = document.getElementById('modalDetailsContent');
+                const res = statusInfo.reservation;
+                let htmlContent = '';
+
+                if (res) {
+                    htmlContent = `
+                        <div class="modal-header"><h3>Reservation Details</h3><span class="modal-close" onclick="closeModal()">&times;</span></div>
+                        <div class="modal-body">
+                            <div class="detail-row"><span class="detail-label">Table</span><span class="detail-value">${res.table}</span></div>
+                            <div class="detail-row"><span class="detail-label">Guest Name</span><span class="detail-value">${res.name}</span></div>
+                            <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${res.time}</span></div>
+                            <div class="detail-row"><span class="detail-label">Guests</span><span class="detail-value">${res.guests}</span></div>
+                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value status-${res.status}">${res.status.toUpperCase()}</span></div>
+                            <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${res.phone}</span></div>
+                            <div class="detail-row"><span class="detail-label">Notes</span><span class="detail-value text-right">${res.notes || 'N/A'}</span></div>
+                            <div class="flex justify-between mt-6">
+                                <button class="btn btn-sm" style="background-color: #f59e0b; color: white;">Mark Pending</button>
+                                <button class="btn btn-sm btn-primary">Mark Seated</button>
+                                <button class="btn btn-sm" style="background-color: #ef4444; color: white;">Check Out</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (statusInfo.status === 'reserved') {
+                    htmlContent = `
+                        <div class="modal-header"><h3>Table Status: Reserved</h3><span class="modal-close" onclick="closeModal()">&times;</span></div>
+                        <div class="modal-body">
+                            <p class="text-gray-600 mb-4">Table ${tableId} is currently blocked for maintenance or a future event.</p>
+                            <div class="flex justify-end mt-6"><button class="btn btn-sm btn-primary">Unblock Table</button></div>
+                        </div>
+                    `;
+                }
+                content.innerHTML = htmlContent;
+                modal.classList.add('active');
+            }
+
+            function openNewReservationModal(tableId) {
+                const table = tablesData.find(t => t.id === tableId);
+                if (!table) return;
+                document.getElementById('newReservationForm').reset();
+                document.getElementById('formTableId').value = tableId;
+                document.getElementById('newReservationTitle').textContent = `New Reservation for Table ${tableId} (${table.capacity} Seats)`;
+                document.getElementById('guestTime').value = new Date().toTimeString().substring(0,5);
+                document.getElementById('newReservationModal').classList.add('active');
+            }
+
+            function handleNewReservation(event) {
+                event.preventDefault();
+                const tableId = document.getElementById('formTableId').value;
+                const table = tablesData.find(t => t.id === tableId);
+                const guests = parseInt(document.getElementById('guestGuests').value);
+
+                if (guests > table.capacity) {
+                    alert(`Error: Table ${tableId} only seats ${table.capacity} guests. Please select a smaller party size or a larger table.`);
+                    return;
+                }
+
+                const newReservation = {
+                    id: Math.max(...reservationsData.map(r => r.id), 0) + 1,
+                    name: document.getElementById('guestName').value,
+                    guests: guests,
+                    time: document.getElementById('guestTime').value,
+                    table: tableId,
+                    status: 'confirmed',
+                    phone: document.getElementById('guestPhone').value || 'N/A',
+                    notes: document.getElementById('guestNotes').value || 'No notes.',
+                };
+
+                reservationsData.push(newReservation);
+                renderAll();
+                closeModal();
+                alert(`Reservation for ${newReservation.name} at Table ${tableId} created successfully!`);
+            }
+
+            function closeModal() {
+                document.getElementById('reservationDetailsModal').classList.remove('active');
+                document.getElementById('newReservationModal').classList.remove('active');
+            }
+
+            // --- Initial Setup & Event Listeners --- //
+            function renderAll() {
+                renderReservationList();
+                const activeRoomTab = document.querySelector('.room-tab.active');
+                if (activeRoomTab) {
+                    renderFloorPlan(activeRoomTab.getAttribute('data-room'));
+                }
+            }
+
+            const roomTabs = document.querySelectorAll('.room-tab');
+            roomTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    roomTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderAll();
+                });
+            });
+
+            document.getElementById('newReservationForm').addEventListener('submit', handleNewReservation);
+
+            // Date Navigation
+            let currentDate = new Date();
+            const currentDateDisplay = document.getElementById('currentDateDisplay');
+            function updateDateDisplay() { currentDateDisplay.textContent = currentDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', ''); }
+            document.getElementById('prevDayButton').addEventListener('click', () => { currentDate.setDate(currentDate.getDate() - 1); updateDateDisplay(); });
+            document.getElementById('nextDayButton').addEventListener('click', () => { currentDate.setDate(currentDate.getDate() + 1); updateDateDisplay(); });
+
+            // Initial Render
+            updateDateDisplay();
+            renderAll();
+        });
+    </script>
 </body>
 </html>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const roomTabs = document.querySelectorAll('.room-tab');
-        const floorPlans = document.querySelectorAll('.floor-plan');
-
-        function switchRoom(roomName) {
-            // Deactivate all tabs and plans
-            roomTabs.forEach(tab => tab.classList.remove('active'));
-            floorPlans.forEach(plan => plan.classList.remove('active'));
-
-            // Activate the selected tab and plan
-            const activeTab = document.querySelector(`.room-tab[data-room="${roomName}"]`);
-            const activePlan = document.getElementById(`${roomName}-plan`);
-
-            if (activeTab) {
-                activeTab.classList.add('active');
-            }
-            if (activePlan) {
-                activePlan.classList.add('active');
-            }
-        }
-
-        // Add click listeners to all room tabs
-        roomTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const roomName = tab.getAttribute('data-room');
-                switchRoom(roomName);
-            });
-        });
-
-        // Initialize to the default active tab (Indoor)
-        switchRoom('indoor');
-
-        // --- Date Navigation Logic ---
-        const currentDateDisplay = document.getElementById('currentDateDisplay');
-        const prevDayButton = document.getElementById('prevDayButton');
-        const nextDayButton = document.getElementById('nextDayButton');
-
-        // Start with the date from the HTML
-        let currentDate = new Date('2024-02-14'); // Assuming Wed, 14 Feb is a placeholder for a real date
-
-        function formatDate(date) {
-            const options = { weekday: 'short', month: 'short', day: 'numeric' };
-            return date.toLocaleDateString('en-US', options).replace(',', '');
-        }
-
-        function updateDateDisplay() {
-            currentDateDisplay.textContent = formatDate(currentDate);
-        }
-
-        prevDayButton.addEventListener('click', () => {
-            currentDate.setDate(currentDate.getDate() - 1);
-            updateDateDisplay();
-            // In a real app, this would trigger a data refresh for the new date
-            console.log('Date changed to:', currentDate.toISOString().split('T')[0]);
-        });
-
-        nextDayButton.addEventListener('click', () => {
-            currentDate.setDate(currentDate.getDate() + 1);
-            updateDateDisplay();
-            // In a real app, this would trigger a data refresh for the new date
-            console.log('Date changed to:', currentDate.toISOString().split('T')[0]);
-        });
-
-        // --- Search Bar Logic (Simulated) ---
-        const searchInput = document.getElementById('reservationSearch');
-        searchInput.addEventListener('input', (event) => {
-            const searchTerm = event.target.value.toLowerCase();
-            console.log('Simulating search for:', searchTerm);
-            // In a real app, this would filter the reservation list dynamically
-        });
-    });
-</script>

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DineDesk — Staff Clock</title>
+
+  <!-- Tailwind CSS -->
+   <script src="https://cdn.tailwindcss.com"></script>
+
+   <style>
+    /* --- DineDesk Theme Styles --- */
+    .brand-gradient { background: linear-gradient(90deg,#ff5f7a,#ff3a6b); }
+    .card { background: white; border-radius: 12px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(90deg,#ff5f7a,#ff3a6b); color: white; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 95, 122, 0.3); }
+    .btn-success { background-color: #10b981; color: white; }
+    .btn-success:hover { background-color: #059669; }
+    .btn-danger { background-color: #ef4444; color: white; }
+    .btn-danger:hover { background-color: #dc2626; }
+    .form-input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    .form-input:focus { outline: none; border-color: #ff5f7a; box-shadow: 0 0 0 3px rgba(255, 95, 122, 0.1); }
+    
+    /* Custom Table Styles */
+    .report-table th { background-color: #f3f4f6; color: #4b5563; font-weight: 600; padding: 12px 16px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .report-table td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+    .report-table tr:last-child td { border-bottom: none; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+  <!-- HEADER -->
+  <header class="brand-gradient text-white p-4 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="ml-2 font-bold text-xl">DineDesk</div>
+      <div class="hidden md:block opacity-90">Staff Attendance System</div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="text-sm">
+        <span class="font-medium">Rezuan_rokib</span> <br>
+        <span class="text-xs opacity-80">Super Admin</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="p-6 max-w-4xl mx-auto space-y-6">
+
+    <!-- Clock In/Out Card -->
+    <div class="card p-6">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Staff Clock-In / Clock-Out</h2>
+      
+      <!-- Real-Time Clock -->
+      <div class="text-center mb-6">
+        <div id="current-time" class="text-6xl font-extrabold text-gray-900 mb-1">00:00:00</div>
+        <div id="current-date" class="text-xl font-medium text-gray-500">Loading Date...</div>
+      </div>
+
+      <!-- Staff Input Form -->
+      <div class="flex flex-col sm:flex-row gap-4 items-end">
+        <div class="flex-grow w-full">
+          <label for="staff-name" class="block text-sm font-medium text-gray-700 mb-1">Staff Name or ID</label>
+          <input type="text" id="staff-name" class="form-input" placeholder="Enter your name or staff ID" required>
+        </div>
+        
+        <button id="clock-in-btn" class="btn btn-success w-full sm:w-auto">Clock In</button>
+        <button id="clock-out-btn" class="btn btn-danger w-full sm:w-auto" disabled>Clock Out</button>
+      </div>
+     </div>
+
+    <!-- Attendance Report -->
+    <div class="card p-6">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Attendance Report</h2>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 report-table">
+          <thead>
+            <tr>
+              <th>Staff Name</th>
+              <th>Date</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-report-body" class="bg-white divide-y divide-gray-200">
+            <!-- Report rows will be injected here by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      <div id="report-message" class="text-gray-500 text-center mt-4 hidden">No shifts logged yet.</div>
+    </div>
+
+  </main>
+
+  <!-- JS -->
+  <script>
+    // --- JavaScript Logic ---
+
+    const timeEl = document.getElementById('current-time');
+    const dateEl = document.getElementById('current-date');
+    const staffNameInput = document.getElementById('staff-name');
+    const clockInBtn = document.getElementById('clock-in-btn');
+    const clockOutBtn = document.getElementById('clock-out-btn');
+    const reportBody = document.getElementById('attendance-report-body');
+    const reportMessage = document.getElementById('report-message');
+
+    // Simulated storage for attendance data
+    let attendanceData = JSON.parse(localStorage.getItem('dineDeskAttendance')) || [];
+    let currentShift = JSON.parse(localStorage.getItem('dineDeskCurrentShift')) || null;
+
+    // --- Utility Functions ---
+
+    function formatTime(date) {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    }
+
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function calculateDuration(start, end) {
+        const diff = end.getTime() - start.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    function updateClock() {
+        const now = new Date();
+        timeEl.textContent = formatTime(now);
+        dateEl.textContent = formatDate(now);
+    }
+
+    // --- Attendance Logic ---
+
+    function saveState() {
+        localStorage.setItem('dineDeskAttendance', JSON.stringify(attendanceData));
+        localStorage.setItem('dineDeskCurrentShift', JSON.stringify(currentShift));
+    }
+
+    function updateUI() {
+        if (currentShift) {
+            staffNameInput.value = currentShift.name;
+            staffNameInput.disabled = true;
+            clockInBtn.disabled = true;
+            clockOutBtn.disabled = false;
+            clockInBtn.textContent = 'Clocked In';
+        } else {
+            staffNameInput.disabled = false;
+            clockInBtn.disabled = false;
+            clockOutBtn.disabled = true;
+            clockInBtn.textContent = 'Clock In';
+        }
+        renderReport();
+    }
+
+    function clockIn() {
+        const name = staffNameInput.value.trim();
+        if (!name) {
+            alert('Please enter your name or staff ID to clock in.');
+            staffNameInput.focus();
+            return;
+        }
+
+        currentShift = {
+            name: name,
+            date: formatDate(new Date()),
+            clockInTime: new Date().toISOString(),
+            clockOutTime: null,
+            duration: 'In Progress'
+        };
+        saveState();
+        updateUI();
+        alert(`Welcome, ${name}! You have clocked in at ${formatTime(new Date())}.`);
+    }
+
+    function clockOut() {
+        if (!currentShift) return;
+
+        const clockOutDate = new Date();
+        const clockInDate = new Date(currentShift.clockInTime);
+
+        currentShift.clockOutTime = clockOutDate.toISOString();
+        currentShift.duration = calculateDuration(clockInDate, clockOutDate);
+
+        attendanceData.unshift(currentShift); // Add to the beginning for newest on top
+        currentShift = null;
+        staffNameInput.value = '';
+
+        saveState();
+        updateUI();
+        alert(`Goodbye! You have clocked out at ${formatTime(clockOutDate)}. Total shift: ${attendanceData[0].duration}.`);
+    }
+
+    function renderReport() {
+        reportBody.innerHTML = '';
+        if (attendanceData.length === 0) {
+            reportMessage.classList.remove('hidden');
+            return;
+        }
+        reportMessage.classList.add('hidden');
+
+        attendanceData.forEach(shift => {
+            const row = reportBody.insertRow();
+            
+            // Name
+            row.insertCell().textContent = shift.name;
+            
+            // Date
+            row.insertCell().textContent = shift.date;
+            
+            // Clock In
+            row.insertCell().textContent = formatTime(new Date(shift.clockInTime));
+            
+            // Clock Out
+            const clockOutCell = row.insertCell();
+            if (shift.clockOutTime) {
+                clockOutCell.textContent = formatTime(new Date(shift.clockOutTime));
+            } else {
+                clockOutCell.innerHTML = '<span class="text-red-500 font-semibold">MISSING</span>';
+            }
+
+            // Duration
+            const durationCell = row.insertCell();
+            durationCell.textContent = shift.duration;
+            if (shift.duration === 'In Progress') {
+                durationCell.classList.add('text-green-600', 'font-semibold');
+            }
+        });
+    }
+
+    // --- Initialization ---
+
+    // Set up event listeners
+    clockInBtn.addEventListener('click', clockIn);
+    clockOutBtn.addEventListener('click', clockOut);
+
+    // Start the clock and update UI
+    setInterval(updateClock, 1000);
+    updateClock(); // Initial call to display immediately
+    updateUI();
+
+  </script>
+
+</body>
+</html>
