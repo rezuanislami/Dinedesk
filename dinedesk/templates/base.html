@@ -57,13 +57,25 @@
 </head>
 
 <body>
-    <div class="sidebar"></div>
+<div class="sidebar" style="background-color:#4A154B; padding:20px;">
+
+    <div style="
+        background-image: url('{{ url_for('static', filename='images/background.logo.webp') }}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 120px;
+        width: 100%;
+    "></div>
+
+</div>
+
+
 
     <div class="main">
         <h1>👋 Welcome to DineDesk</h1>
         <p>DineDesk is a complete restaurant management platform designed to help your business grow effortlessly.</p>
 
-        <!-- Flask-compatible button -->
         <a href="{{ url_for('login') }}" class="btn">
             Explore DineDesk →
         </a>
@@ -74,3 +86,4 @@
     </div>
 </body>
 </html>
+

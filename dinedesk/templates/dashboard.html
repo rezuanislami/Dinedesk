@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+         
         .brand-gradient {
             background: linear-gradient(90deg, #ff5f7a, #ff3a6b);
         }
@@ -245,6 +246,7 @@
     <header class="brand-gradient text-white p-6 sticky top-0 z-40">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
+                
                 <h1 class="font-bold text-2xl">DineDesk</h1>
                 <span class="opacity-80 hidden md:block">Restaurant Dashboard</span>
             </div>
@@ -263,17 +265,30 @@
     <!-- MAIN CONTAINER -->
     <div class="container-main">
         <!-- SIDEBAR -->
-        <aside class="sidebar hidden md:block">
-            <nav class="sidebar-nav">
-                <li><a href="#" class="active">Dashboard</a></li>
-                <li><a href="#reservations">Reservations</a></li>
-                <li><a href="{{ url_for('menu') }}">Menu</a></li>
-                <li><a href="{{ url_for('new_order') }}">New Order</a></li>
-                <li><a href="{{ url_for('staff') }}">Staff</a></li>
-                <li><a href="{{ url_for('floor_plan') }}">Floor Plan</a></li>
-                <li><a href="{{ url_for('settings') }}" class="active">Settings</a></li>
-            </nav>
-        </aside>
+        <!-- SIDEBAR -->
+<aside class="sidebar hidden md:block" style="background-color:#4A154B; padding:20px;">
+    <div style="
+        background-image: url('{{ url_for('static', filename='images/background.logo.webp') }}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 150px;
+        width: 100%;
+        filter: brightness(0) invert(1);
+        margin-bottom: 30px;
+    ">
+    </div>
+
+    <nav class="sidebar-nav">
+        <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">Dashboard</a></li>
+        <li><a href="#">Reservations</a></li>
+        <li><a href="{{ url_for('menu') }}" class="{{ 'active' if request.endpoint == 'menu' else '' }}">Menu</a></li>
+        <li><a href="{{ url_for('new_order') }}" class="{{ 'active' if request.endpoint == 'new_order' else '' }}">New Order</a></li>
+        <li><a href="{{ url_for('staff') }}" class="{{ 'active' if request.endpoint == 'staff' else '' }}">Staff</a></li>
+        <li><a href="{{ url_for('floor_plan') }}" class="{{ 'active' if request.endpoint == 'floor_plan' else '' }}">Floor Plan</a></li>
+        <li><a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' else '' }}">Settings</a></li>
+    </nav>
+</aside>
 
         <!-- MAIN CONTENT -->
         <main class="main-content">
