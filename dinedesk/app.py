@@ -224,6 +224,9 @@ def floor_plan():
 @app.route('/staff')
 def staff():
    return render_template('staff.html')
+@app.route('/kitchen')
+def kitchen():
+    return "Hello"
 
 
 

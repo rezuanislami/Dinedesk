@@ -1,31 +1,326 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Kitchen Orders</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DineDesk — Kitchen Display System</title>
+    <!-- New Theme: Tailwind CSS and Custom Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Styles from the new Dashboard Theme */
+        .brand-gradient {
+            background: linear-gradient(90deg, #ff5f7a, #ff3a6b);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+        }
+        .sidebar {
+            background-color: #4A154B; /* Keeping the original sidebar color */
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            width: 280px;
+            flex-shrink: 0;
+        }
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-nav li {
+            margin-bottom: 8px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white; /* Changed to white for the dark sidebar */
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .container-main {
+            display: flex;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            background: #f9fafb;
+            overflow-y: auto;
+        }
+        
+        /* Kanban Specific Styles */
+        .kanban-board {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            height: calc(100vh - 150px); /* Adjust height for full view */
+        }
+
+        .kanban-column {
+            min-width: 300px;
+            max-width: 300px;
+            background-color: #f3f4f6; /* Light gray background for column */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .column-header {
+            padding: 12px 16px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            font-size: 1.1em;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        
+        /* Using the status colors from the provided theme for a modern look */
+        .column-header.incoming { background-color: #3b82f6; } /* Blue */
+        .column-header.preparing { background-color: #ff5f7a; } /* Pink from brand-gradient */
+        .column-header.ready { background-color: #10b981; } /* Green from metric-card.orders */
+        .column-header.served { background-color: #6b7280; } /* Gray */
+
+        .column-content {
+            padding: 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        /* Order Card Styling */
+        .order-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            transition: all 0.2s;
+        }
+        
+        .order-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .order-card h4 {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: #1f2937;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-card .time {
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #9ca3af;
+        }
+        
+        .order-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 10px;
+        }
+        
+        .order-card ul li {
+            font-size: 0.9em;
+            padding: 4px 0;
+            color: #4b5563;
+        }
+        
+        .order-card ul li strong {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .order-card .table-info {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        
+        /* Drag and Drop Feedback */
+        .kanban-column.drag-over .column-content {
+            border: 2px dashed #9ca3af;
+            border-radius: 6px;
+        }
+    </style>
 </head>
-<body>
-    <h1>Kitchen Tickets</h1>
 
-    {% for t in tickets %}
-        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-            <strong>Order #{{ t.order_id }}</strong><br>
-            Item: {{ t.menu_item.name }}<br>
-            Quantity: {{ t.quantity }}<br>
-            Status: {{ t.status }}<br><br>
-
-            <form method="POST" action="{{ url_for('update_status', item_id=t.id, status='preparing') }}">
-                <button type="submit">Mark Preparing</button>
-            </form>
-            <form method="POST" action="{{ url_for('update_status', item_id=t.id, status='ready') }}">
-                <button type="submit">Mark Ready</button>
-            </form>
-            <form method="POST" action="{{ url_for('update_status', item_id=t.id, status='served') }}">
-                <button type="submit">Mark Served</button>
-            </form>
+<body class="bg-gray-50">
+    <!-- HEADER (Simplified for Kitchen View) -->
+    <header class="brand-gradient text-white p-4 flex items-center justify-between sticky top-0 z-40">
+        <div class="flex items-center gap-4">
+            <h1 class="font-bold text-xl">DineDesk Kitchen Display</h1>
         </div>
-    {% else %}
-        <p>No active tickets.</p>
-    {% endfor %}
+        <div class="text-sm opacity-80">Current Time: <span id="current-time"></span></div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container-main">
+        <!-- SIDEBAR -->
+        <aside class="sidebar hidden md:block">
+            <div class="logo-container">
+                <!-- Logo is set via background-image in CSS -->
+            </div>
+            <nav class="sidebar-nav">
+                <li><a href="#" class="active">Kitchen Display</a></li>
+                <li><a href="#">Menu Management</a></li>
+                <li><a href="#">Staff Rota</a></li>
+                <li><a href="#">Settings</a></li>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Order Status Board</h2>
+                <p class="text-gray-600 mt-1">Drag and drop tickets to update status.</p>
+            </div>
+
+            <div class="kanban-board">
+                
+                <!-- Incoming Column -->
+                <div class="kanban-column" id="incoming-column">
+                    <div class="column-header incoming">Incoming (0)</div>
+                    <div class="column-content">
+                        <!-- Placeholder Order Card 1 -->
+                        <div class="order-card" draggable="true" data-order-id="1">
+                            <h4>Table 5 <span class="time">1 min ago</span></h4>
+                            <div class="table-info">Order #1001 - John D.</div>
+                            <ul>
+                                <li><strong>2x</strong> Chicken Caesar Salad</li>
+                                <li><strong>1x</strong> French Onion Soup</li>
+                            </ul>
+                        </div>
+                        <!-- Placeholder Order Card 2 -->
+                        <div class="order-card" draggable="true" data-order-id="2">
+                            <h4>Takeout <span class="time">3 min ago</span></h4>
+                            <div class="table-info">Order #1002 - Sarah K.</div>
+                            <ul>
+                                <li><strong>1x</strong> Margherita Pizza</li>
+                                <li><strong>1x</strong> Coke</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preparing Column -->
+                <div class="kanban-column" id="preparing-column">
+                    <div class="column-header preparing">Preparing (0)</div>
+                    <div class="column-content">
+                        <!-- Placeholder Order Card 3 -->
+                        <div class="order-card" draggable="true" data-order-id="3">
+                            <h4>Table 12 <span class="time">10 min ago</span></h4>
+                            <div class="table-info">Order #1003 - Mike P.</div>
+                            <ul>
+                                <li><strong>1x</strong> Steak Frites (Med-Rare)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ready Column -->
+                <div class="kanban-column" id="ready-column">
+                    <div class="column-header ready">Ready (0)</div>
+                    <div class="column-content">
+                        <!-- Ready orders will go here -->
+                    </div>
+                </div>
+
+                <!-- Served Column -->
+                <div class="kanban-column" id="served-column">
+                    <div class="column-header served">Served (0)</div>
+                    <div class="column-content">
+                        <!-- Served orders will go here -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const columns = document.querySelectorAll('.kanban-column');
+            const cards = document.querySelectorAll('.order-card');
+            const currentTimeSpan = document.getElementById('current-time');
+
+            // Update time every second
+            function updateTime() {
+                const now = new Date();
+                currentTimeSpan.textContent = now.toLocaleTimeString();
+            }
+            setInterval(updateTime, 1000);
+            updateTime(); // Initial call
+
+            // 1. Make cards draggable
+            cards.forEach(card => {
+                card.addEventListener('dragstart', dragStart);
+            });
+
+            // 2. Make columns droppable
+            columns.forEach(column => {
+                column.addEventListener('dragover', dragOver);
+                column.addEventListener('dragleave', dragLeave);
+                column.addEventListener('drop', drop);
+            });
+
+            let draggedCard = null;
+
+            function dragStart(e) {
+                draggedCard = this;
+                setTimeout(() => (this.style.display = 'none'), 0);
+            }
+
+            function dragOver(e) {
+                e.preventDefault(); // Necessary to allow dropping
+                this.classList.add('drag-over');
+            }
+            
+            function dragLeave(e) {
+                this.classList.remove('drag-over');
+            }
+
+            function drop(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                const columnContent = this.querySelector('.column-content');
+                if (columnContent && draggedCard) {
+                    columnContent.appendChild(draggedCard);
+                    draggedCard.style.display = 'block';
+                    updateColumnCounts();
+                }
+            }
+            
+            // Function to update the count in the column headers
+            function updateColumnCounts() {
+                columns.forEach(column => {
+                    const header = column.querySelector('.column-header');
+                    const count = column.querySelectorAll('.order-card').length;
+                    const title = header.textContent.split('(')[0].trim();
+                    header.textContent = `${title} (${count})`;
+                });
+            }
+            
+            // Initial count update
+            updateColumnCounts();
+        });
+    </script>
 </body>
 </html>
-
