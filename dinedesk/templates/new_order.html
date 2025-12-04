@@ -463,8 +463,25 @@
         </div>
     </div>
 
+    <!-- ORDER CONFIRMATION MODAL -->
+    <div id="confirmationModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1001;">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold" style="color: #2e7d32;">✅ Order Placed!</h2>
+                <button onclick="closeConfirmationModal()" style="font-size: 24px; background: none; border: none; cursor: pointer;">&times;</button>
+            </div>
+
+            <pre id="confirmationSummary" class="mb-6 p-4 bg-gray-50 rounded-lg font-mono text-sm whitespace-pre-wrap" style="line-height: 1.5; border: 1px solid #e5e7eb;"></pre>
+
+            <div class="flex gap-3">
+                <button class="btn btn-primary flex-1" onclick="closeConfirmationModal()">Done</button>
+                <button class="btn btn-secondary flex-1" onclick="printOrderSummary()">Print</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Menu data from menu.html
+        // Menu data
         const menuData = {
             appetizer: [
                 { id: 1, name: "Bruschetta", price: 8.99, emoji: "🍞", category: "appetizer" },
@@ -656,35 +673,140 @@
             document.getElementById('checkoutModal').classList.remove('active');
         }
 
+        // ✅ ENHANCED: Send to Flask + show summary
         function handleCheckout(event) {
             event.preventDefault();
 
-            const order = {
-                id: Math.floor(Math.random() * 10000),
-                customer: document.getElementById('customerName').value,
-                phone: document.getElementById('customerPhone').value,
-                email: document.getElementById('customerEmail').value,
-                items: cart,
-                notes: document.getElementById('orderNotes').value,
-                paymentMethod: document.getElementById('paymentMethod').value,
-                orderType: document.getElementById('orderType').value,
-                total: document.getElementById('checkoutTotal').textContent,
-                timestamp: new Date().toLocaleString()
+            const customerName = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const notes = document.getElementById('orderNotes').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const orderType = document.getElementById('orderType').value;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const tax = (subtotal - discount) * 0.1;
+            const total = subtotal - discount + tax;
+
+            const orderData = {
+                customer: customerName,
+                phone: phone,
+                notes: notes,
+                items: cart.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                paymentMethod: paymentMethod,
+                orderType: orderType,
+                total: total.toFixed(2)
             };
 
-            console.log('Order Placed:', order);
-            alert(`Order #${order.id} placed successfully!\n\nCustomer: ${order.customer}\nTotal: ${order.total}\nType: ${order.orderType}`);
-            
-            // Reset form and cart
-            document.getElementById('checkoutForm').reset();
-            cart = [];
-            updateCart();
-            renderMenu();
-            closeCheckoutModal();
+            // 🔔 POST to Flask to send to /kitchen
+            fetch('/place_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // ✅ Show order summary modal
+                    const summaryData = {
+                        id: data.order_id,
+                        customer: customerName,
+                        phone: phone,
+                        notes: notes,
+                        paymentMethod: paymentMethod,
+                        orderType: orderType,
+                        items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+                        subtotal: subtotal,
+                        discount: discount,
+                        tax: tax,
+                        total: total.toFixed(2)
+                    };
+                    showConfirmationModal(summaryData);
+
+                    // Reset UI
+                    cart = [];
+                    updateCart();
+                    renderMenu();
+                    document.getElementById('checkoutForm').reset();
+                    closeCheckoutModal();
+                } else {
+                    alert('❌ Failed to place order: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Network error:', err);
+                alert('⚠️ Could not connect to server. Is Flask running?');
+            });
         }
 
-        // Initialize on page load
+        // ===== ORDER SUMMARY MODAL =====
+        function generateOrderSummary(orderData) {
+            let summary = `📌 ORDER SUMMARY\n`;
+            summary += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            summary += `Order ID:    #${orderData.id}\n`;
+            summary += `Customer:    ${orderData.customer || '—'}\n`;
+            summary += `Phone:       ${orderData.phone || '—'}\n`;
+            summary += `Type:        ${
+                orderData.orderType === 'dine-in' ? 'Dine In' :
+                orderData.orderType === 'takeout' ? 'Takeout' : 'Delivery'
+            }\n`;
+            summary += `Payment:     ${
+                orderData.paymentMethod === 'cash' ? 'Cash' :
+                orderData.paymentMethod === 'card' ? 'Card' : 'Online'
+            }\n`;
+            summary += `Time:        ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
+            
+            if (orderData.notes) {
+                summary += `\n📝 Notes:\n${orderData.notes.trim()}\n`;
+            }
+            
+            summary += `\n📋 ITEMS:\n`;
+            orderData.items.forEach(item => {
+                const lineTotal = (item.price * item.quantity).toFixed(2);
+                summary += `- ${item.quantity}x ${item.name} @ $${item.price.toFixed(2)} = $${lineTotal}\n`;
+            });
+            
+            summary += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            summary += `Subtotal:    $${orderData.subtotal.toFixed(2)}\n`;
+            summary += `Discount:    $${orderData.discount.toFixed(2)}\n`;
+            summary += `Tax (10%):   $${orderData.tax.toFixed(2)}\n`;
+            summary += `──────────────────────────────\n`;
+            summary += `✅ TOTAL:     $${orderData.total}\n`;
+            summary += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+
+            return summary;
+        }
+
+        function showConfirmationModal(orderData) {
+            const summary = generateOrderSummary(orderData);
+            document.getElementById('confirmationSummary').textContent = summary;
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        function printOrderSummary() {
+            const printContent = document.getElementById('confirmationSummary').textContent;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html><head><title>Order #${Date.now()}</title>
+                <style>body { font-family: monospace; padding: 20px; white-space: pre-wrap; }</style>
+                </head><body>${printContent}</body></html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Initialize
         window.addEventListener('DOMContentLoaded', init);
     </script>
- </body>
- </html>
+</body>
+</html>

@@ -286,7 +286,7 @@
         <li><a href="{{ url_for('new_order') }}" class="{{ 'active' if request.endpoint == 'new_order' else '' }}">New Order</a></li>
         <li><a href="{{ url_for('staff') }}" class="{{ 'active' if request.endpoint == 'staff' else '' }}">Staff</a></li>
         <li><a href="{{ url_for('floor_plan') }}" class="{{ 'active' if request.endpoint == 'floor_plan' else '' }}">Floor Plan</a></li>
-        <li><a herf="{{ url_for('kitchen') }}" class="{{ 'active' if request.endpoint == 'kitchen' else ' ' }}">kitchen Display</a></li>
+        <li><a href="{{ url_for('kitchen') }}" class="{{ 'active' if request.endpoint == 'kitchen' else '' }}">kitchen Display</a></li>
         <li><a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' else '' }}">Settings</a></li>
     </nav>
 </aside>
