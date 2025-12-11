@@ -4,6 +4,8 @@ from functools import wraps
 import json
 from datetime import datetime
 import queue
+import sqlite3
+
 
 from flask_migrate import Migrate
 
@@ -54,6 +56,42 @@ class Order(db.Model):
     status = db.Column(db.String(20), default="incoming")
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+def init_db():
+    conn = sqlite3.connect("orders.db")
+    c = conn.cursor()
+
+    # Orders table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY,
+            table_number TEXT,
+            notes TEXT,
+            payment_method TEXT,
+            order_type TEXT,
+            customer TEXT,
+            phone TEXT,
+            email TEXT,
+            total TEXT,
+            timestamp TEXT
+        )
+    """)
+
+    # Order items table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER,
+            name TEXT,
+            quantity INTEGER,
+            FOREIGN KEY(order_id) REFERENCES orders(id)
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+# Run database creation at startup
+init_db()
 
 # ---------- Auto-create DB + admin account ----------
 with app.app_context():
@@ -352,6 +390,45 @@ def events():
                 sse_queues.remove(q)
 
     return Response(event_stream(), mimetype="text/event-stream")
+from flask import request, jsonify
+import sqlite3
+
+@app.route("/save-order", methods=["POST"])
+def save_order():
+    data = request.json
+    print("Incoming order:", data)
+
+    conn = sqlite3.connect("orders.db")
+    c = conn.cursor()
+
+    # Insert order
+    c.execute("""
+        INSERT INTO orders (id, table_number, notes, payment_method, order_type, customer, phone, email, total, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        data["id"],
+        data["tableNumber"],
+        data["notes"],
+        data["paymentMethod"],
+        data["orderType"],
+        data["customer"],
+        data["phone"],
+        data["email"],
+        data["total"],
+        data["timestamp"]
+    ))
+
+    # Insert items
+    for item in data["items"]:
+        c.execute("""
+            INSERT INTO order_items (order_id, name, quantity)
+            VALUES (?, ?, ?)
+        """, (data["id"], item["name"], item["quantity"]))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "saved"})
 
 
 # ================================

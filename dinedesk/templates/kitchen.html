@@ -42,12 +42,16 @@
 
 <div class="container-main">
     <aside class="sidebar hidden md:block">
-        <ul class="sidebar-nav">
-            <li><a class="active">Kitchen Display</a></li>
-            <li><a>Menu Management</a></li>
-            <li><a>Staff Rota</a></li>
-            <li><a>Settings</a></li>
-        </ul>
+        <nav class="sidebar-nav">
+        <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">Dashboard</a></li>
+        <li><a href="#">Reservations</a></li>
+        <li><a href="{{ url_for('menu') }}" class="{{ 'active' if request.endpoint == 'menu' else '' }}">Menu</a></li>
+        <li><a href="{{ url_for('new_order') }}" class="{{ 'active' if request.endpoint == 'new_order' else '' }}">New Order</a></li>
+        <li><a href="{{ url_for('staff') }}" class="{{ 'active' if request.endpoint == 'staff' else '' }}">Staff</a></li>
+        <li><a href="{{ url_for('floor_plan') }}" class="{{ 'active' if request.endpoint == 'floor_plan' else '' }}">Floor Plan</a></li>
+        <li><a href="{{ url_for('kitchen') }}" class="{{ 'active' if request.endpoint == 'kitchen' else '' }}">kitchen Display</a></li>
+        <li><a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' else '' }}">Settings</a></li>
+    </nav>
     </aside>
 
     <main class="main-content">

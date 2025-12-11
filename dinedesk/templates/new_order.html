@@ -450,6 +450,10 @@
                         </select>
                     </div>
                 </div>
+                <div class="input-group">
+    <label for="tableNumber">Table Number</label>
+    <input type="text" id="tableNumber" placeholder="Enter table number">
+</div>
 
                 <div class="form-group">
                     <label>Order Total: <span id="checkoutTotal" class="font-bold text-pink-600">$0.00</span></label>
@@ -742,6 +746,42 @@
                 alert('⚠️ Could not connect to server. Is Flask running?');
             });
         }
+function placeOrder() {
+
+    const order = {
+        id: Math.floor(Math.random() * 10000),
+        customer: document.getElementById('customerName').value,
+        phone: document.getElementById('customerPhone').value,
+        email: document.getElementById('customerEmail').value,
+        items: cart,
+        notes: document.getElementById('orderNotes').value,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        orderType: document.getElementById('orderType').value,
+        total: document.getElementById('checkoutTotal').textContent,
+        timestamp: new Date().toLocaleString(),
+        tableNumber: document.getElementById("tableNumber").value
+    };
+
+    // Save to localStorage for kitchen page
+    let orders = JSON.parse(localStorage.getItem("kitchenOrders")) || [];
+    orders.push(order);
+    localStorage.setItem("kitchenOrders", JSON.stringify(orders));
+
+    // Save to SQLite database
+    fetch("/save-order", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(order)
+    })
+    .then(res => res.json())
+    .then(data => console.log("Saved to DB:", data))
+    .catch(err => console.error("DB Save Error:", err));
+
+    // Success popup
+    alert(`Order #${order.id} placed successfully!\n\nTable: ${order.tableNumber}\nTotal: ${order.total}`);
+}
 
         // ===== ORDER SUMMARY MODAL =====
         function generateOrderSummary(orderData) {
